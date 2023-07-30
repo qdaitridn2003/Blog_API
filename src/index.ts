@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { mainRouter } from './routes';
 import { responseHandler } from './middlewares';
 import { ServerConfig } from './config';
+import { startMongodbConnection } from './third-party';
 
 const APP = express();
 const PORT = ServerConfig.port;
@@ -22,11 +23,14 @@ APP.use(
   }),
 );
 APP.use(helmet());
-APP.use(bodyParser.urlencoded({ extended: false }));
+APP.use(bodyParser.urlencoded({ extended: true }));
 APP.use(bodyParser.json());
 
 /* Endpoint */
 mainRouter(APP);
+
+/* Third Party Connection */
+startMongodbConnection();
 
 /* Payload Handler Middleware */
 APP.use(responseHandler);
