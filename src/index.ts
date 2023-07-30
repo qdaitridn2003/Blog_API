@@ -9,6 +9,7 @@ import { mainRouter } from './routes';
 import { responseHandler } from './middlewares';
 import { ServerConfig } from './config';
 import { startMongodbConnection } from './third-party';
+import createFirebaseApp from './third-party/firebase.party';
 
 const APP = express();
 const PORT = ServerConfig.port;
@@ -31,6 +32,7 @@ mainRouter(APP);
 
 /* Third Party Connection */
 startMongodbConnection();
+createFirebaseApp();
 
 /* Payload Handler Middleware */
 APP.use(responseHandler);
