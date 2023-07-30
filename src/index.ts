@@ -5,14 +5,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import { mainRouter } from './routes';
 import { responseHandler } from './middlewares';
-
-dotenv.config({ path: './.env' });
+import { ServerConfig } from './config';
 
 const APP = express();
-const PORT = process.env.PORT;
+const PORT = ServerConfig.port;
 const SERVER = http.createServer(APP);
 
 /* Using Middlewares */
