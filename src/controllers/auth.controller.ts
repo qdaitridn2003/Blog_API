@@ -2,7 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthModel } from '../models';
 
 class AuthController {
-  async handleLogin(req: Request, res: Response, next: NextFunction) {}
+  async handleLogin(req: Request, res: Response, next: NextFunction) {
+    const { username, password } = req.body;
+    try {
+      const result = await AuthModel.findOne({ username, password });
+      if (!result?.verifiedAt) console.log('You have not verified your account');
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async handleRegister(req: Request, res: Response, next: NextFunction) {
     const { username, password } = req.body;
     try {

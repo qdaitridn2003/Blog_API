@@ -9,6 +9,7 @@ import { mainRouter } from './routes';
 import { responseHandler } from './middlewares';
 import { ServerConfig } from './config';
 import { startMongodbConnection } from './third-party';
+import path from 'path';
 
 const APP = express();
 const PORT = ServerConfig.port;
@@ -25,7 +26,6 @@ APP.use(
 APP.use(helmet());
 APP.use(bodyParser.urlencoded({ extended: true }));
 APP.use(bodyParser.json());
-
 /* Endpoint */
 mainRouter(APP);
 

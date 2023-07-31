@@ -1,2 +1,2 @@
 export * from './mongodb.party';
-export * from './firebase.party';
+export * from './mailer.party';
