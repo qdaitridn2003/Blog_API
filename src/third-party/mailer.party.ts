@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { MailerConfig } from '../config';
 import Mail from 'nodemailer/lib/mailer';
 import { htmlContentHandler } from '../utilities';
+import { Schema } from 'mongoose';
 
 const mailerTransporter = nodemailer.createTransport({
   service: 'hotmail',
@@ -11,7 +12,7 @@ const mailerTransporter = nodemailer.createTransport({
   },
 });
 
-export const sendMailToVerifyAccountHandler = (mail?: string, _id?: string) => {
+export const sendMailToVerifyAccountHandler = (mail?: string, _id?: Schema.Types.ObjectId) => {
   const options: Mail.Options = {
     from: MailerConfig.username,
     to: mail,

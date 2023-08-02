@@ -3,9 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Account</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;">
+    <title>Blog App - Verify Account</title>
+    <link rel="icon" href="/images/logo.png" type="image/x-icon"/>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h3>Verify Account</h3>
+<body class="relative flex justify-center item-center">
+    <div class="bg-stone-100 w-1/3 h-50 mt-48 absolute flex-col justify-center item-center drop-shadow-md rounded-sm px-4">
+        <h1 class="text-center uppercase mt-3 text-2xl font-semibold">Email Confirmination</h1>
+        <p class="mt-6 text-center">Hello there, your email address is verify. Now, you can sign in to the app</p>
+        <img class="m-auto my-3 w-16 h-16" src="https://cdn-icons-png.flaticon.com/128/8888/8888205.png" />
+        <div class="flex justify-center my-3">
+            <span>&#9866;&#9866;</span>
+            <p class="text-center mx-3"> Power By Blog App</p>
+            <span>&#9866;&#9866;</span>
+        </div>
+    </div>
 </body>
 </html>

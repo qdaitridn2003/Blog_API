@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AuthModel } from '../models';
+import path from 'path';
 
 class AuthController {
   async handleLogin(req: Request, res: Response, next: NextFunction) {
@@ -21,7 +22,16 @@ class AuthController {
     }
   }
 
-  async handleVerifyAccount(req: Request, res: Response, next: NextFunction) {}
+  async handleVerifyAccount(req: Request, res: Response, next: NextFunction) {
+    const { _id } = req.params;
+    try {
+      const result = await AuthModel.updateOne({ _id: _id }, { verifyAt: new Date() });
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+    res.sendFile(path.resolve('./src/pages/verifyPage.html'));
+  }
 }
 
 export default new AuthController();
