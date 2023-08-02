@@ -1,5 +1,5 @@
-import { HttpError } from 'http-errors';
+import ErrorType from './error.type';
 
-type PayloadType = { status?: number; message?: string; data: any } | HttpError;
+type PayloadType = { status?: number; message?: string; data?: any } | ErrorType;
 
 export default PayloadType;

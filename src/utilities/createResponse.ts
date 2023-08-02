@@ -1,4 +1,4 @@
-const createResponse = (data: object[] | object, status?: number, message?: string) => {
+const createResponse = (data?: object[] | object, message?: string, status?: number) => {
   const response = { status, message, data };
   return response;
 };

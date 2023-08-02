@@ -1,8 +1,8 @@
-import { Schema } from 'mongoose';
+import { Schema, Document } from 'mongoose';
 
 export interface IAuth {
   _id?: Schema.Types.ObjectId;
-  username?: string;
-  password?: string;
+  username: string;
+  password: string;
   verifiedAt?: Date;
 }

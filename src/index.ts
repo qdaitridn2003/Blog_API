@@ -6,7 +6,7 @@ import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import { mainRouter } from './routes';
-import { responseHandler } from './middlewares';
+import { errorHandler, responseHandler } from './middlewares';
 import { ServerConfig } from './config';
 import { startMongodbConnection } from './third-party';
 import path from 'path';
@@ -36,6 +36,7 @@ startMongodbConnection();
 
 /* Payload Handler Middleware */
 APP.use(responseHandler);
+APP.use(errorHandler);
 
 SERVER.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
