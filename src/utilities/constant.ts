@@ -1,17 +1,33 @@
 import { Schema } from 'mongoose';
 
-export const htmlContentHandler = (_id?: Schema.Types.ObjectId) => {
+export const htmlVerifyContentHandler = (accessToken?: string) => {
   const htmlVerifyContent = `
   <div style="text-align: center; width: 15rem;">
     <h3 style="text-transform: capitalize;">Confirm your email address</h3>
     <p>Your email address have signed up in my app.<br/> Let tap 
-        <a href="http://localhost:6969/verify-account/${_id}">here</a> 
+        <a href="http://localhost:6969/verify-account/${accessToken}">here</a> 
         to confirm it
     </p>
     <p>Cheer, Peace</p>
   </div>
     `;
   return htmlVerifyContent;
+};
+
+export const htmlOtpContentHandler = (otp?: string) => {
+  const htmlOtpContent = `
+  <div style="text-align: center; width: 15rem;">
+    <h3 style="text-transform: capitalize;">Reset Password</h3>
+    <p>Someone request that the password be reset for the following account
+    . Just copy the code behind to confirm your request. Do not share this code and it is expire in few minutes</p>
+    <p style="background-color: #125ecb;
+    padding: 8px 12px; margin: 8px 0px ;color: #fff;
+    font-weight: bold; font-size: 14px;
+    border-radius: 16px">${otp}</p>
+    <p>Cheer, Peace</p>
+  </div>
+  `;
+  return htmlOtpContent;
 };
 
 export const defaultAvatarUrl =

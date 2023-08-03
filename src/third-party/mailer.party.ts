@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { MailerConfig } from '../config';
 import Mail from 'nodemailer/lib/mailer';
-import { htmlContentHandler } from '../utilities';
+import { htmlOtpContentHandler, htmlVerifyContentHandler } from '../utilities';
 import { Schema } from 'mongoose';
 
 const mailerTransporter = nodemailer.createTransport({
@@ -12,12 +12,25 @@ const mailerTransporter = nodemailer.createTransport({
   },
 });
 
-export const sendMailToVerifyAccountHandler = (mail?: string, _id?: Schema.Types.ObjectId) => {
+export const sendMailToVerifyAccountHandler = (mail?: string, accessToken?: string) => {
   const options: Mail.Options = {
     from: MailerConfig.username,
     to: mail,
     subject: 'Verify Account Email Address',
-    html: htmlContentHandler(_id),
+    html: htmlVerifyContentHandler(accessToken),
+  };
+  mailerTransporter.sendMail(options, (error, info) => {
+    if (error) console.log(error);
+    if (info) console.log(info);
+  });
+};
+
+export const sendOtpToEmailHandler = (mail?: string, otp?: string) => {
+  const options: Mail.Options = {
+    from: MailerConfig.username,
+    to: mail,
+    subject: 'Reset Password',
+    html: htmlOtpContentHandler(otp),
   };
   mailerTransporter.sendMail(options, (error, info) => {
     if (error) console.log(error);

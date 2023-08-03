@@ -7,7 +7,7 @@ import createHttpError from 'http-errors';
 const mainRouter = (app: Application) => {
   app.use('/api/v1', v1Router);
 
-  app.get('/verify-account/:_id', AuthController.handleVerifyAccount);
+  app.get('/verify-account/:token', AuthController.handleVerifyAccount);
 };
 
 export default mainRouter;
