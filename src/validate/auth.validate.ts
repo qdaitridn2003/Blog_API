@@ -46,8 +46,8 @@ export const EmailValidate = Zod.object({
 });
 
 export const ResetPasswordValidate = Zod.object({
-  username: Zod.string().email({ message: 'Username must be an email address' }),
   otp: Zod.string().length(6, { message: 'Otp must be at least 6 number' }),
+  otpSecret: Zod.string({ required_error: 'Otp secret is required' }),
   newPassword: Zod.string()
     .regex(new RegExp('^[a-z0-9_.-]*$'), {
       message: 'New password must do not have special characters and uppercase letters',

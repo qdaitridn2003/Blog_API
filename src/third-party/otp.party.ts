@@ -1,9 +1,13 @@
 import speakeasy from 'speakeasy';
-import { ServerConfig } from '../config';
+import { generateToken } from '../utilities';
+import { Schema } from 'mongoose';
 
-const otpSecret = ServerConfig.otpSecret as string;
+export const generateOTPSecret = (payload: { sub: Schema.Types.ObjectId; username: string }) => {
+  const otpSecret = generateToken(payload, 'custom');
+  return otpSecret;
+};
 
-export const generateOTP = () => {
+export const generateOTP = (otpSecret: string) => {
   const otp = speakeasy.totp({
     secret: otpSecret,
     algorithm: 'sha256',
@@ -13,7 +17,7 @@ export const generateOTP = () => {
   return otp;
 };
 
-export const verifyOTP = (otp: string) => {
+export const verifyOTP = (otp: string, otpSecret: string) => {
   const resultVerify = speakeasy.totp.verify({
     secret: otpSecret,
     algorithm: 'sha256',

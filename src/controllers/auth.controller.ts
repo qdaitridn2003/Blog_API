@@ -7,8 +7,21 @@ import {
   ResetPasswordValidate,
 } from '../validate';
 import { AuthModel } from '../models';
-import { generateOTP, sendMailToVerifyAccountHandler, sendOtpToEmailHandler, verifyOTP } from '../third-party';
-import { compareHashPassword, createResponse, generateHashPassword, generateToken, verifyToken } from '../utilities';
+import {
+  generateOTP,
+  generateOTPSecret,
+  sendMailToVerifyAccountHandler,
+  sendOtpToEmailHandler,
+  verifyOTP,
+} from '../third-party';
+import {
+  compareHashPassword,
+  createResponse,
+  decodeToken,
+  generateHashPassword,
+  generateToken,
+  verifyToken,
+} from '../utilities';
 import path from 'path';
 import createHttpError from 'http-errors';
 
@@ -111,15 +124,15 @@ class AuthController {
   /* Handle Get Email To Forgot Password [POST] */
   async handleGetEmailToForgotPassword(req: Request, res: Response, next: NextFunction) {
     const { username } = req.body;
-    res.locals.username = username;
     const resultValidate = EmailValidate.safeParse({ username });
     if (resultValidate.success) {
       try {
         const resultFind = await AuthModel.findOne({ username });
         if (resultFind) {
-          const otp = generateOTP();
+          const otpSecret = generateOTPSecret({ sub: resultFind._id, username: resultFind.username });
+          const otp = generateOTP(otpSecret);
           sendOtpToEmailHandler(username, otp);
-          next(createResponse({}, 'Please check your email to get otp'));
+          next(createResponse({ otpSecret }, 'Please check your email to get otp'));
         } else {
           next(createHttpError(401, 'Your account is not exist'));
         }
@@ -131,14 +144,15 @@ class AuthController {
 
   /* Handle Forgot Password [PATCH] */
   async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
-    const { otp, newPassword, confirmPassword, username } = req.body;
-    const resultValidate = ResetPasswordValidate.safeParse({ otp, newPassword, confirmPassword, username });
+    const { otp, newPassword, confirmPassword, otpSecret } = req.body;
+    const resultValidate = ResetPasswordValidate.safeParse({ otp, newPassword, confirmPassword });
     if (resultValidate.success) {
-      const isInvalidOTP = verifyOTP(otp);
+      const isInvalidOTP = verifyOTP(otp, otpSecret);
+      const decodeTokenResult = decodeToken(otpSecret);
       if (isInvalidOTP) {
         try {
           const hashPassword = generateHashPassword(newPassword);
-          const result = await AuthModel.updateOne({ username }, { password: hashPassword });
+          const result = await AuthModel.updateOne({ _id: decodeTokenResult?.sub }, { password: hashPassword });
           next(createResponse({}, 'Your account has been reset password'));
         } catch (error) {
           next(error);

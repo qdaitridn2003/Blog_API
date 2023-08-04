@@ -13,7 +13,7 @@ const generateToken = (payload: object | string | Buffer, signature: SignatureTy
   } else if (signature === 'refresh') {
     return jwt.sign(payload, refreshTokenKey, { algorithm: 'HS256', expiresIn: '30d' });
   } else if (signature === 'custom') {
-    return jwt.sign(payload, customTokenKey, { algorithm: 'HS256', expiresIn: '10m' });
+    return jwt.sign(payload, customTokenKey, { algorithm: 'HS256', expiresIn: '5m' });
   } else {
     throw new Error('Invalid signature');
   }
