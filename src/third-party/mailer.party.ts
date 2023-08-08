@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer';
 import { MailerConfig } from '../config';
 import Mail from 'nodemailer/lib/mailer';
 import { htmlOtpContentHandler, htmlVerifyContentHandler } from '../utilities';
-import { Schema } from 'mongoose';
 
 const mailerTransporter = nodemailer.createTransport({
   service: 'hotmail',
@@ -12,12 +11,12 @@ const mailerTransporter = nodemailer.createTransport({
   },
 });
 
-export const sendMailToVerifyAccountHandler = (mail?: string, accessToken?: string) => {
+export const sendMailToVerifyAccountHandler = (mail?: string, otp?: string) => {
   const options: Mail.Options = {
     from: MailerConfig.username,
     to: mail,
     subject: 'Verify Account Email Address',
-    html: htmlVerifyContentHandler(accessToken),
+    html: htmlVerifyContentHandler(otp),
   };
   mailerTransporter.sendMail(options, (error, info) => {
     if (error) console.log(error);

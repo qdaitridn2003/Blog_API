@@ -26,7 +26,6 @@ APP.use(
 APP.use(helmet({ contentSecurityPolicy: false }));
 APP.use(bodyParser.urlencoded({ extended: true }));
 APP.use(bodyParser.json());
-APP.use(express.static(path.resolve('./src/public')));
 
 /* Endpoint */
 mainRouter(APP);

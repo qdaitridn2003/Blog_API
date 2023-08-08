@@ -22,7 +22,6 @@ import {
   generateToken,
   verifyToken,
 } from '../utilities';
-import path from 'path';
 import createHttpError from 'http-errors';
 
 class AuthController {
@@ -66,9 +65,12 @@ class AuthController {
         try {
           const hashPassword = generateHashPassword(password);
           const result = await AuthModel.create({ username, password: hashPassword });
-          const verifyToken = generateToken({ sub: result._id, username: result.username }, 'custom');
-          sendMailToVerifyAccountHandler(username, verifyToken);
-          next(createResponse({}, 'Please check your email to confirm account'));
+          if (result) {
+            const otpSecret = generateOTPSecret({ sub: result._id, username: result.username });
+            const otp = generateOTP(otpSecret);
+            sendMailToVerifyAccountHandler(result.username, otp);
+            next(createResponse({ otpSecret }, 'Please check your email to confirm account'));
+          }
         } catch (error) {
           next(error);
         }
@@ -76,21 +78,25 @@ class AuthController {
     } else next(resultValidate.error);
   }
 
-  /* Handle Verify Email Address [GET] */
+  /* Handle Verify Email Address [PATCH] */
   async handleVerifyAccount(req: Request, res: Response, next: NextFunction) {
-    const { token } = req.params;
+    const { otpSecret, otp } = req.body;
     try {
-      const decodeToken = verifyToken(token, 'custom');
-      try {
-        const result = await AuthModel.updateOne({ _id: decodeToken.sub }, { verifiedAt: new Date() });
-      } catch (error) {
-        next(error);
+      const decodeToken = verifyToken(otpSecret, 'custom');
+      const isInvalidOTP = verifyOTP(otp, otpSecret);
+      if (isInvalidOTP) {
+        try {
+          const result = await AuthModel.updateOne({ _id: decodeToken.sub }, { verifiedAt: new Date() });
+          next(createResponse({}, 'Confirm email address successfully'));
+        } catch (error) {
+          next(error);
+        }
+      } else {
+        next(createHttpError(401, 'Otp is expired'));
       }
     } catch (error) {
       next(error);
     }
-
-    res.sendFile(path.resolve('./src/pages/verifyPage.html'));
   }
 
   /* Handle Change Password [PATCH] */
@@ -145,7 +151,7 @@ class AuthController {
   /* Handle Forgot Password [PATCH] */
   async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
     const { otp, newPassword, confirmPassword, otpSecret } = req.body;
-    const resultValidate = ResetPasswordValidate.safeParse({ otp, newPassword, confirmPassword });
+    const resultValidate = ResetPasswordValidate.safeParse({ otp, newPassword, confirmPassword, otpSecret });
     if (resultValidate.success) {
       const isInvalidOTP = verifyOTP(otp, otpSecret);
       const decodeTokenResult = decodeToken(otpSecret);
@@ -161,6 +167,25 @@ class AuthController {
         next(createHttpError(401, 'OTP is expired'));
       }
     } else next(resultValidate.error);
+  }
+
+  /* Handle Check Token And Generate New Token [POST] */
+  async handleGetNewAccessToken(req: Request, res: Response, next: NextFunction) {
+    const { accessToken, refreshToken } = req.body;
+    try {
+      const isExpired = verifyToken(accessToken, 'access');
+    } catch (error) {
+      if (error) {
+        const resultDecode = decodeToken(refreshToken);
+        try {
+          const resultFind = await AuthModel.findById(resultDecode?.sub);
+          const accessToken = generateToken({ sub: resultFind?._id, username: resultFind?.username }, 'access');
+          next(createResponse({ accessToken }));
+        } catch (error) {
+          next(error);
+        }
+      }
+    }
   }
 }
 

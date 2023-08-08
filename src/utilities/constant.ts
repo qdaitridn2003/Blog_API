@@ -1,13 +1,13 @@
-import { Schema } from 'mongoose';
-
-export const htmlVerifyContentHandler = (accessToken?: string) => {
+export const htmlVerifyContentHandler = (otp?: string) => {
   const htmlVerifyContent = `
   <div style="text-align: center; width: 15rem;">
     <h3 style="text-transform: capitalize;">Confirm your email address</h3>
-    <p>Your email address have signed up in my app.<br/> Let tap 
-        <a href="http://localhost:6969/verify-account/${accessToken}">here</a> 
-        to confirm it
-    </p>
+    <p>Verify your email gives you access to more blog app.
+    Just copy the code behind to confirm your request. Do not share this code and it is expire in few minutes</p>
+    <p style="background-color: #125ecb;
+    padding: 8px 12px; margin: 8px 0px ;color: #fff;
+    font-weight: bold; font-size: 14px;
+    border-radius: 16px">${otp}</p>
     <p>Cheer, Peace</p>
   </div>
     `;
