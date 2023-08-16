@@ -4,7 +4,7 @@ import multer from 'multer';
 const imageHandler = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fieldSize: 10 * 1000 * 1000, //10MB
+    fieldSize: 100 * 1000 * 1000, //100MB
   },
   fileFilter: (req, file, next) => {
     const tailFile = file.mimetype.split('/')[1];

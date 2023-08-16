@@ -9,7 +9,7 @@ const customTokenKey = ServerConfig.customTokenKey as string;
 
 const generateToken = (payload: object | string | Buffer, signature: SignatureType) => {
   if (signature === 'access') {
-    return jwt.sign(payload, accessTokenKey, { algorithm: 'HS256', expiresIn: '30s' });
+    return jwt.sign(payload, accessTokenKey, { algorithm: 'HS256', expiresIn: '1h' });
   } else if (signature === 'refresh') {
     return jwt.sign(payload, refreshTokenKey, { algorithm: 'HS256', expiresIn: '30d' });
   } else if (signature === 'custom') {

@@ -5,8 +5,8 @@ import {
   LoginValidate,
   RegisterValidate,
   ResetPasswordValidate,
-} from '../validate';
-import { AuthModel } from '../models';
+} from '../validates';
+import { AuthModel, ProfileModel } from '../models';
 import {
   generateOTP,
   generateOTPSecret,
@@ -68,6 +68,7 @@ class AuthController {
           if (result) {
             const otpSecret = generateOTPSecret({ sub: result._id, username: result.username });
             const otp = generateOTP(otpSecret);
+            console.log('Confirm email address otp:', otp);
             sendMailToVerifyAccountHandler(result.username, otp);
             next(createResponse({ otpSecret }, 'Please check your email to confirm account'));
           }
@@ -86,8 +87,8 @@ class AuthController {
       const isInvalidOTP = verifyOTP(otp, otpSecret);
       if (isInvalidOTP) {
         try {
-          const result = await AuthModel.updateOne({ _id: decodeToken.sub }, { verifiedAt: new Date() });
-          next(createResponse({}, 'Confirm email address successfully'));
+          const result = await AuthModel.findOneAndUpdate({ _id: decodeToken.sub }, { verifiedAt: new Date() });
+          next(createResponse({ _id: result?._id }, 'Confirm email address successfully'));
         } catch (error) {
           next(error);
         }
@@ -137,6 +138,7 @@ class AuthController {
         if (resultFind) {
           const otpSecret = generateOTPSecret({ sub: resultFind._id, username: resultFind.username });
           const otp = generateOTP(otpSecret);
+          console.log('Confirm reset password otp:', otp);
           sendOtpToEmailHandler(username, otp);
           next(createResponse({ otpSecret }, 'Please check your email to get otp'));
         } else {
@@ -148,23 +150,38 @@ class AuthController {
     } else next(resultValidate.error);
   }
 
-  /* Handle Forgot Password [PATCH] */
-  async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
-    const { otp, newPassword, confirmPassword, otpSecret } = req.body;
-    const resultValidate = ResetPasswordValidate.safeParse({ otp, newPassword, confirmPassword, otpSecret });
-    if (resultValidate.success) {
+  /* Handle Verify Otp To Forgot Password */
+  async handleVerifyOtpToForgotPassword(req: Request, res: Response, next: NextFunction) {
+    const { otpSecret, otp } = req.body;
+    try {
+      const decodeToken = verifyToken(otpSecret, 'custom');
       const isInvalidOTP = verifyOTP(otp, otpSecret);
-      const decodeTokenResult = decodeToken(otpSecret);
       if (isInvalidOTP) {
         try {
-          const hashPassword = generateHashPassword(newPassword);
-          const result = await AuthModel.updateOne({ _id: decodeTokenResult?.sub }, { password: hashPassword });
-          next(createResponse({}, 'Your account has been reset password'));
+          const result = await AuthModel.findOne({ _id: decodeToken.sub });
+          next(createResponse({ account: result }, 'Verify otp successfully'));
         } catch (error) {
           next(error);
         }
       } else {
-        next(createHttpError(401, 'OTP is expired'));
+        next(createHttpError(401, 'Otp is expired'));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /* Handle Forgot Password [PATCH] */
+  async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
+    const { newPassword, confirmPassword, _id } = req.body;
+    const resultValidate = ResetPasswordValidate.safeParse({ newPassword, confirmPassword });
+    if (resultValidate.success) {
+      try {
+        const hashPassword = generateHashPassword(newPassword);
+        const result = await AuthModel.updateOne({ _id: _id }, { password: hashPassword });
+        next(createResponse({}, 'Your account has been reset password'));
+      } catch (error) {
+        next(error);
       }
     } else next(resultValidate.error);
   }
@@ -185,6 +202,18 @@ class AuthController {
           next(error);
         }
       }
+    }
+  }
+
+  /* Handle Delete Account [DELETE] */
+  async handleDeleteAccount(req: Request, res: Response, next: NextFunction) {
+    const { _id } = res.locals;
+    try {
+      const resultAuth = await AuthModel.deleteOne({ _id: _id });
+      const resultProfile = await ProfileModel.deleteOne({ auth_id: _id });
+      next(createResponse({}, 'Deleted account successfully'));
+    } catch (error) {
+      next(error);
     }
   }
 }

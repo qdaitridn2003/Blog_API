@@ -7,7 +7,7 @@ const responseHandler = (payload: PayloadType, req: Request, res: Response, next
   } else {
     return res
       .status(payload.status ?? 200)
-      .json({ data: payload.data, message: payload.message ?? 'Successfully', error: {} });
+      .json({ data: payload.data, message: payload.message ?? 'Successfully', error: null });
   }
 };
 
