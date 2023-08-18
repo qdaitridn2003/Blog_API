@@ -14,14 +14,7 @@ import {
   sendOtpToEmailHandler,
   verifyOTP,
 } from '../third-party';
-import {
-  compareHashPassword,
-  createResponse,
-  decodeToken,
-  generateHashPassword,
-  generateToken,
-  verifyToken,
-} from '../utilities';
+import { compareHashPassword, createResponse, generateHashPassword, generateToken, verifyToken } from '../utilities';
 import createHttpError from 'http-errors';
 
 class AuthController {
@@ -42,10 +35,41 @@ class AuthController {
           } else {
             const accessToken = generateToken({ sub: result._id, username: result.username }, 'access');
             const refreshToken = generateToken({ sub: result._id, username: result.username }, 'refresh');
-            next(createResponse({ accessToken, refreshToken }));
+            next(createResponse({ account: result, accessToken, refreshToken }));
           }
         } else next(createHttpError(400, 'Account is not exist'));
-      } catch (error) {}
+      } catch (error) {
+        next(error);
+      }
+    } else next(resultValidate.error);
+  }
+
+  /* Handle Re-Confirm Account */
+  async handleReConfirmAccount(req: Request, res: Response, next: NextFunction) {
+    const { username, password } = req.body;
+    const resultValidate = LoginValidate.safeParse({
+      username: username,
+      password: password,
+    });
+    if (resultValidate.success) {
+      try {
+        const result = await AuthModel.findOne({ username });
+        if (result) {
+          if (!result?.verifiedAt) {
+            const otpSecret = generateOTPSecret({ sub: result._id, username: result.username });
+            const otp = generateOTP(otpSecret);
+            sendMailToVerifyAccountHandler(result.username, otp);
+            console.log('Re-Confirm email address otp:', otp);
+            next(createResponse({ otpSecret }, 'Please check your email to confirm account'));
+          } else {
+            next(createHttpError(400, 'This account has already been verified'));
+          }
+        } else {
+          next(createHttpError(400, 'Account is not exist'));
+        }
+      } catch (error) {
+        next(error);
+      }
     } else next(resultValidate.error);
   }
 
@@ -77,6 +101,34 @@ class AuthController {
         }
       }
     } else next(resultValidate.error);
+  }
+
+  /* Handle Re-Send Otp For Register */
+  async handleResendOtpForRegister(req: Request, res: Response, next: NextFunction) {
+    const { username, password, confirmPassword } = req.body;
+    const resultValidate = RegisterValidate.safeParse({
+      username: username,
+      password: password,
+      confirmPassword: confirmPassword,
+    });
+    if (resultValidate.success) {
+      try {
+        const result = await AuthModel.findOne({ username });
+        if (result) {
+          const otpSecret = generateOTPSecret({ sub: result._id, username: result.username });
+          const otp = generateOTP(otpSecret);
+          console.log('Confirm email address otp:', otp);
+          sendMailToVerifyAccountHandler(result.username, otp);
+          next(createResponse({ otpSecret }, 'Please check your email to confirm account'));
+        } else {
+          next(createHttpError(400, 'Account is not exist'));
+        }
+      } catch (error) {
+        next(error);
+      }
+    } else {
+      next(resultValidate.error);
+    }
   }
 
   /* Handle Verify Email Address [PATCH] */
@@ -138,7 +190,7 @@ class AuthController {
         if (resultFind) {
           const otpSecret = generateOTPSecret({ sub: resultFind._id, username: resultFind.username });
           const otp = generateOTP(otpSecret);
-          console.log('Confirm reset password otp:', otp);
+          console.log('Reset password otp:', otp);
           sendOtpToEmailHandler(username, otp);
           next(createResponse({ otpSecret }, 'Please check your email to get otp'));
         } else {
@@ -184,25 +236,6 @@ class AuthController {
         next(error);
       }
     } else next(resultValidate.error);
-  }
-
-  /* Handle Check Token And Generate New Token [POST] */
-  async handleGetNewAccessToken(req: Request, res: Response, next: NextFunction) {
-    const { accessToken, refreshToken } = req.body;
-    try {
-      const isExpired = verifyToken(accessToken, 'access');
-    } catch (error) {
-      if (error) {
-        const resultDecode = decodeToken(refreshToken);
-        try {
-          const resultFind = await AuthModel.findById(resultDecode?.sub);
-          const accessToken = generateToken({ sub: resultFind?._id, username: resultFind?.username }, 'access');
-          next(createResponse({ accessToken }));
-        } catch (error) {
-          next(error);
-        }
-      }
-    }
   }
 
   /* Handle Delete Account [DELETE] */

@@ -6,6 +6,8 @@ const authRouter = express.Router();
 
 authRouter.post('/register', AuthController.handleRegister);
 
+authRouter.post('/register/resend-otp', AuthController.handleResendOtpForRegister);
+
 authRouter.post('/login', AuthController.handleLogin);
 
 authRouter.patch('/verify-mail', AuthController.handleVerifyAccount);
@@ -16,7 +18,5 @@ authRouter
   .route('/forgot-password')
   .post(AuthController.handleGetEmailToForgotPassword)
   .patch(AuthController.handleForgotPassword);
-
-authRouter.post('/get-access-token', AuthController.handleGetNewAccessToken);
 
 export default authRouter;
